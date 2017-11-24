@@ -2,7 +2,10 @@
 title: "pres1"
 author: "kl"
 date: "11/14/2017"
-output: ioslides_presentation
+output: 
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
 ---
 
 ```{r setup, include=FALSE}
@@ -16,6 +19,14 @@ This is an R Markdown presentation. Markdown is a simple formatting syntax for a
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
 
 ## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+- Bullet 4
+- Bullet 5
+
+## Slide with Bullets {.smaller .build}
 
 - Bullet 1
 - Bullet 2
