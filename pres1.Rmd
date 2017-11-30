@@ -2,11 +2,12 @@
 title: "pres1"
 author: "kl"
 date: "11/14/2017"
-output: 
+output:
   ioslides_presentation:
-    widescreen: true
-    smaller: true
     logo: logo.png
+    smaller: yes
+    widescreen: yes
+  slidy_presentation: default
 ---
 
 ```{r setup, include=FALSE}
