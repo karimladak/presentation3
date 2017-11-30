@@ -7,7 +7,6 @@ output:
     logo: logo.png
     smaller: yes
     widescreen: yes
-  slidy_presentation: default
 ---
 
 ```{r setup, include=FALSE}
