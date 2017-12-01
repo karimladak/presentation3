@@ -1,0 +1,504 @@
+---
+title: "R Introduction"
+author: "Rory Winston"
+date: "2 August 2014"
+output:
+  ioslides_presentation: default
+  beamer_presentation:
+    fig_height: 6
+    fig_width: 8
+    keep_tex: yes
+logo: logo.png
+self_contained: no
+fontsize: 10pt
+---
+ 
+ 
+## What is R?
+ 
+- A Domain-Specific-Language (DSL) for statistics and data analysis
+- Based on the S Programming Language
+- An environment for Exploratory Data Analysis (EDA)
+- A quasi-functional language with IDE and REPL
+- A vectorized language with BLAS support
+- A collection of over 7,000+ libraries
+- A large and active community across industry and academia
+- Around 20 years old (Lineage dates from 1975 - almost 40 years ago)
+ 
+```{r,echo=FALSE,message=FALSE}
+options("digits"=5)
+options("digits.secs"=3)
+ 
+```
+ 
+ 
+## Types
+ 
+- Primitives (numeric, integer, character, logical, factor)
+- Data Frames
+- Lists
+- Tables
+- Arrays
+- Environments
+- Others (functions, closures, promises..)
+ 
+## Simple Types 
+```{r,collapse=TRUE}
+x <- 1
+class(x)
+ 
+y <- "Hello World"
+class(y)
+ 
+z <- TRUE
+class(z)
+ 
+as.integer(z)
+```
+ 
+## Simple Types - Vectors 
+ 
+The basic type unit in R is a vector
+ 
+```{r, collapse=TRUE} 
+x <- c(1,2,3)
+x
+x <- 1:3
+x[1]
+x[0]
+x[-1]
+```
+ 
+## Generating Vectors
+ 
+R provides lots of convenience functions for data generation:
+ 
+```{r,collapse=TRUE}
+rep(0, 5)
+seq(1,10)
+seq(1,2,.1)
+seq(1,2,length.out=6)
+```
+ 
+## Indexing
+ 
+```{r,collapse=TRUE}
+x <- c(1, 3, 4, 10, 15, 20, 50, 1, 6)
+x > 10
+which(x > 10)
+x[x>10]
+x[!x>10]
+x[x<=10]
+x[x>10 & x<30]
+```
+ 
+## Functions {.smaller}
+ 
+```{r, collapse=TRUE}
+square <- function(x) x^2
+square(2)
+ 
+pow <- function(x, p=2) x^p
+pow(10)
+pow(10,3)
+pow(p=3,10)
+ 
+```
+ 
+Functions can be passed as data:
+ 
+```{r,collapse=TRUE}
+g <- function(x, f) f(x)
+g(10, square)
+ 
+h <- function(x,f,...) f(x,...)
+h(10, pow, 3)
+```
+ 
+## R is Vectorized 
+ 
+Example - multiplying two vectors:
+ 
+```{r}
+mult <- function(x,y) {  
+ z <- numeric(length(x))
+ for (i in 1:length(x)) {
+    z[i] <- x[i] * y[i]
+ }
+ z
+}
+ 
+mult(1:10,1:10)
+```
+ 
+## R is Vectorized
+ 
+Multiplying two vectors 'the R way':
+ 
+```{r}
+1:10 * 1:10
+```
+ 
+NOTE: R recycles vectors of unequal length:
+```{r}
+1:10 * 1:2
+```
+ 
+## NOTE: Random Number Generation
+ 
+R contains a huge number of built-in random number generators for various probability distributions
+ 
+```{r}
+# Normal variates, mean=0, sd=1
+rnorm(10)
+rnorm(10, mean=100, sd=5)
+```
+ 
+Many different distributions available (the <b>r*</b> functions)
+ 
+## Data Frames
+ 
+- Data frames are the fundamental structure used in data analysis
+- Similar to a database table in spirit (named columns, distinct types)
+ 
+```{r}
+d <- data.frame(x=1:6, y="AUDUSD", z=c("one","two"))
+d
+```
+ 
+## Data Frames
+ 
+Data frames can be indexed like a vector or matrix:
+ 
+```{r,collapse=TRUE}
+# First row
+d[1,]
+ 
+# First column
+d[,1]
+ 
+# First and third cols, first two rows
+d[1:2,c(1,3)]
+```
+ 
+ 
+## Data Frames {.smaller}
+ 
+Let's generate some dummy data:
+```{r}
+ 
+generateData <- function(N) data.frame(time=Sys.time()+1:N, 
+  sym="AUDUSD", 
+  bid=rep(1.2345,N)+runif(min=-.0010,max=.0010,N),
+  ask=rep(1.2356,N)+runif(min=-.0010,max=.0010,N),
+  exch=sample(c("EBS","RTM","CNX"),N, replace=TRUE)) 
+ 
+prices <- generateData(50)
+head(prices, 5)
+```
+ 
+## Data Frames
+ 
+We can add/remove columns on the fly:
+```{r}
+prices$spread <- prices$ask-prices$bid
+prices$mid <- (prices$bid + prices$ask) * 0.5
+head(prices)
+```
+ 
+## Data Frames 
+ 
+Some basic operations on data frames:
+```{r,collapse=TRUE}
+names(prices)
+ 
+table(prices$exch)
+ 
+summary(prices$mid)
+```
+ 
+## Data Frames {.smaller}
+ 
+Operations can be applied across different dimensions of a data frame:
+ 
+```{r,collapse=TRUE}
+sapply(prices,class)
+```
+ 
+## Aggregations and Rollups {.smaller}
+ 
+Aggregation and rollups:
+ 
+```{r}
+tapply(prices$spread, prices$exch, mean)
+```
+ 
+## Aggregations and Rollups {.smaller}
+ 
+```{r}
+tapply(prices$mid, prices$exch, function(x) diff(log(x)))
+```
+ 
+## Aggregations and Rollups {.smaller}
+ 
+Aggregating summary statistics by time:
+ 
+```{r}
+aggregate(prices[,c("bid","ask")], 
+  by=list(bucket=cut(prices$time, "10 sec")), mean)
+```
+ 
+## Aggregations and Rollups {.smaller}
+ 
+```{r}
+aggregate(prices[,c("bid","ask")], 
+          by=list(bucket=cut(prices$time, "10 sec")), 
+          function(x) c(min=min(x),max=max(x)))
+```
+ 
+## Aggregations and Rollups {.smaller}
+ 
+```{r}
+prices <- generateData(2000)
+prices$spread <- prices$ask-prices$bid
+boxplot(prices$spread ~ prices$exch, main="Spread Distribution By Exchange")
+```
+ 
+ 
+## Closures
+ 
+R functions contain a reference to the enclosing environment:
+ 
+```{r}
+add <- function(x) { 
+ function(y) x + y
+}
+ 
+increment <- add(1)
+increment(2)
+```
+ 
+## R's Lisp Influence
+ 
+R is heavily influenced by Lisp/Scheme
+ 
+cf. "Structure And  Interpretation of Computer Programs"
+ 
+<center><img src="sicp_cover.jpg" width="200" height="350"/></center>
+ 
+## R's Lisp Influence
+```{r}
+`+`(2,3)
+(`*` (2, (`+`(2,3))))
+codetools::showTree(quote(2*(2+3)))
+```
+ 
+## R's Lisp Influence {.smaller}
+ 
+Also evident in the underlying C code:
+ 
+``` c
+SEXP attribute_hidden do_prmatrix(SEXP call, SEXP op, 
+  SEXP args, SEXP rho)
+{
+    int quote;
+    SEXP a, x, rowlab, collab, naprint;
+    char *rowname = NULL, *colname = NULL;
+ 
+    checkArity(op,args);
+    PrintDefaults();
+    a = args;
+    x = CAR(a); a = CDR(a);
+    rowlab = CAR(a); a = CDR(a);
+    collab = CAR(a); a = CDR(a);
+ 
+    quote = asInteger(CAR(a)); a = CDR(a);
+```    
+ 
+## Operators Are Functions
+```{r}
+`(`
+(1+2)
+`(` <- function(x) 42
+(1+2)
+rm("(")
+```
+ 
+ 
+## Example: Median Absolute Deviation {.smaller}
+$MAD(x) = median\left(\left|Y_i - \hat{Y}\right|\right)$
+```{r}
+mad
+```
+ 
+ 
+## Example: Median Absolute Deviation
+ 
+Shows: lazy evaluation, filering, logical casting, if/else return values, partial sorting
+<code>
+<pre>
+function (x, center = <span style='background-color:yellow'>median(x)</span>, constant = 1.4826, na.rm = FALSE, 
+    low = FALSE, high = FALSE) 
+{
+    if (na.rm) x <- <span style='background-color:yellow'>x[!is.na(x)]</span>
+    n <- length(x)
+    constant * <span style='background-color:yellow'>if ((low || high) && n%%2 == 0) {
+        if (low && high) 
+            stop("'low' and 'high' cannot be both TRUE")
+        n2 <- n%/%2 + <span style='background-color:orange'>as.integer(high)</span>
+        sort(abs(x - center), <span style='background-color:orange'>partial = n2</span>)[n2]
+    }
+    else median(abs(x - center))</span>
+}
+</pre>
+</code>
+ 
+ 
+## Example: Simulating Coin Tosses {.smaller}
+ 
+What is the probability of exactly 3 heads in 10 coin tosses for a fair coin?
+ 
+*Using binomial identity:*
+$\binom{n}{k}p^{k}(1-p)^{(n-k)} = \binom{10}{3}\left(\frac{1}{2}\right)^{3}\left(\frac{1}{2}\right)^{7}$
+ 
+```{r}
+choose(10,3)*(.5)^3*(.5)^7
+```
+ 
+*Using binomial distribution density function:*
+```{r}
+ dbinom(prob=0.5, size=10, x=3)
+```
+ 
+*Using simulation (100,000 tosses):*
+```{r}
+sum(replicate(100000,sum(rbinom(prob=1/2, size=10, 1))==3))/100000
+```
+ 
+## Example: Random Walk {.smaller}
+ 
+Generate 1000 up-down movements based on a fair coin toss and plot:
+ 
+```{r}
+x<-(cumsum(ifelse(rbinom(prob=0.5, size=1, 10000)==0,-1,1)))
+plot(x, type='l', main='Random Walk')
+```
+ 
+## Example: Generating Random Data {.smaller}
+```{r}
+randomWalk <-function(N)(cumsum(ifelse(rbinom(prob=0.5, size=1, N)==0,-1,1)))
+AUDUSD <- 1.2345 + randomWalk(1000)*.0001
+plot(AUDUSD, type='l')
+```
+ 
+## Example: OANDA FX Data {.smaller}
+```{r,message=FALSE,eval=FALSE}
+require(quantmod);require(TTR)
+EURUSD <- getSymbols("EUR/USD", src="oanda", auto.assign=FALSE)
+plot(EURUSD)
+lines(EMA(EURUSD,10), col='red')
+lines(EMA(EURUSD,30), col='blue')
+```
+<center><img src="oanda_eurusd.png" height="400px" width="600px" /></center>
+ 
+## Example: Connecting to kdb+ {.smaller}
+ 
+```
+Rorys-MacBook-Pro:kdb rorywinston$ <b>./rlwrap q/m32/q -p 5000</b>
+KDB+ 3.1 2014.07.01 Copyright (C) 1993-2014 Kx Systems
+m32/ 8()core 16384MB rorywinston rorys-macbook-pro.local 127.0.0.1 NONEXPIRE  
+Welcome to kdb+ 32bit edition
+<b>q)\p</b>
+5000i
+<b>q) trades:([]time:100?.z.P;price:100?2.;
+  side:100?`B`S;exch:100?`CNX`RTM`EBS;sym:100?`EURUSD`AUDUSD`GBPUSD)</b>
+<b>q)10#trades</b>
+time                          price     side exch sym   
+--------------------------------------------------------
+2010.08.13D12:33:29.975458112 0.6019404 B    CNX  EURUSD
+2001.11.24D20:53:58.972661440 0.7075032 S    CNX  EURUSD
+2002.12.12D03:12:04.442386736 1.500898  S    CNX  GBPUSD
+2002.02.12D21:48:33.887104336 0.6170263 S    EBS  AUDUSD
+2014.05.01D06:59:44.647138496 0.8821325 S    EBS  GBPUSD
+2010.12.06D15:30:14.928601664 1.094677  S    RTM  AUDUSD
+2009.04.19D23:12:33.919967488 1.187474  B    RTM  GBPUSD
+2008.07.18D22:13:25.681742656 0.1768144 B    EBS  GBPUSD
+2010.08.22D10:16:15.261483520 0.3576458 S    EBS  AUDUSD
+2010.02.28D13:49:33.686598976 1.526465  S    RTM  EURUSD
+```
+ 
+## Example: Connecting to kdb+ 
+ 
+```{r,eval=FALSE}
+setwd("/Users/rorywinston/sandbox/kdb")
+source("qserver.R")
+open_connection("localhost", 5000)
+trades <- k("select from trades")
+head(trades)
+                 time     price side exch    sym
+1 2010-08-13 22:33:29 0.6019404    B  CNX EURUSD
+2 2001-11-25 07:53:58 0.7075032    S  CNX EURUSD
+3 2002-12-12 14:12:04 1.5008982    S  CNX GBPUSD
+4 2002-02-13 08:48:33 0.6170263    S  EBS AUDUSD
+5 2014-05-01 16:59:44 0.8821325    S  EBS GBPUSD
+6 2010-12-07 02:30:14 1.0946771    S  RTM AUDUSD
+```
+ 
+kdb+ datatypes are converted to native R types
+ 
+## Example: Reading Log Data From File 
+ 
+```{r, eval=FALSE}
+# Read file into data frame
+logfile <- read.csv("/tmp/application.log", sep=",", header=FALSE)
+# Set column descriptors
+colnames(logfile) <- c("time","message","severity")
+# Convert to native date/time
+logfile$time <- as.POSIXct(strptime
+                  (logfile$time, "%Y-%m-%d %H:%M:%OS"), tz="GMT")
+ 
+```
+ 
+## Example: Using Datasets
+ 
+The famous 'Air passengers' dataset
+```{r}
+plot(AirPassengers)
+```
+ 
+## Example: Using Datasets {.smaller}
+The 'Anscombe Quartet' dataset
+ 
+```{r,collapse=TRUE,fig.height=4,fig.width=5,fig.align='center'} 
+op <- par(mfrow=c(2,2),mar=rep(1,4))
+with(anscombe,{plot(x1,y1,pch=20);plot(x2,y2,pch=20);
+               plot(x3,y3,pch=20);plot(x4,y4,pch=20)})
+par(op)
+```
+ 
+## Recommended Libraries
+ 
+- ggplot2 - Mini-DSL for data visualization
+- zoo/xts - Time series libraries
+- Matrix - Enhanced matrix library
+- plyr/reshape - Data reshaping/manipulation
+- data.table - Faster data.frame manipulation
+- e1071 - Machine learning/data mining functions
+- caret - Statistical learning/training functions
+- randomforest - Random forest library
+- Rcpp - Convenient C++ interface 
+ 
+## Other Topics (Not Covered)
+ 
+- S3/S4 Classes/Objects 
+- Packages
+- Lazy Evaluation
+- Formula Interface
+- JIT Compilation/bytecode
+- Debugging
+- C/C++ Interfaces
+- Reproducible Research (Sweave/knitr/markdown)
+ 
+## Links
+ 
+http://www.r-project.org
