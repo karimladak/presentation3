@@ -1,7 +1,7 @@
 ---
 title: "R Introduction"
-author: "Rory Winston"
-date: "2 August 2014"
+author: "John Doe"
+date: "2 August 2017"
 output:
   ioslides_presentation: default
   beamer_presentation:
