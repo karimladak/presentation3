@@ -117,7 +117,7 @@ It supports both inline: \(y = x / 2\) and displayed formulas:
 > nothing to becoming an expert without going through a period of great
 > frustration and great suckiness.
 
-**Hadley Wickhamÿ **
+**Hadley Wickhamï¿½ **
 
 ## Slide with R Code and Output
 
