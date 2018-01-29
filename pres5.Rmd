@@ -24,7 +24,7 @@ First, install the package from Github:
 >devtools::install_github("mangothecat/rmdshower")
 > 
 
-Then use this file as a template.
+Then use this file as a template. Test2
 
 ## R Markdown
 
